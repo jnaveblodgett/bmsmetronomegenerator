@@ -1,0 +1,70 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Feb 17 12:59:44 2018
+
+@author: Jessica
+"""
+
+
+import scipy.io.wavfile as wav
+import pandas as pd # install with "pip install pandas" on the command line
+import numpy as np
+
+musicname = "silence.wav"
+metronome_low = "low_wood_block_short.wav"
+metronome_high = "high_wood_block_short.wav"
+
+#csvnames = []
+#outputfilenames = []
+csvname = "isochronousmetronome1.csv"
+outputfilename = "isochronousmetronome1.wav"
+
+
+beep_length = 0.0477
+#high_pitch = 1661
+#low_pitch = 830
+
+
+
+
+#CSV number 1
+
+
+#for x in xrange(0,14):
+events = pd.read_csv(csvname, header=None)
+ #   events = pd.read_csv(csvnames[x], header=None)
+sample_rate, music = wav.read(musicname)
+lowmetronomesound = wav.read(metronome_low)
+highmetronomesound = wav.read(metronome_high)
+    
+beep_times = events[0]
+high_beeps = events[1] == 1
+ 
+t = np.linspace(0,beep_length,beep_length*sample_rate) # create a half second sound (for our metronome click)
+#    low = np.sin(2*np.pi*low_pitch * t)*0.5 + np.sin(3*2*np.pi*low_pitch * t)/3 + np.sin(5*2*np.pi*low_pitch * t)/5 + np.sin(7*2*np.pi*low_pitch * t)/7 + np.sin(9*2*np.pi*low_pitch * t)/9 + np.sin(11*2*np.pi*low_pitch * t)/11 + np.sin(13*2*np.pi*low_pitch * t)/13 # create a 830Hz sine wave beep).
+#    high = np.sin(2*np.pi*high_pitch * t)*0.7 + np.sin(3*2*np.pi*high_pitch * t)/3 + np.sin(5*2*np.pi*high_pitch * t)/5 + np.sin(7*2*np.pi*high_pitch * t)/7 + np.sin(9*2*np.pi*high_pitch * t)/9 + np.sin(11*2*np.pi*low_pitch * t)/11 + np.sin(13*2*np.pi*low_pitch * t)/13 # create a 1661Hz sine wave beep).
+
+#    low = np.minimum(2**15, np.maximum(-2**15+1, low * 2**15)).astype("int16")
+#    high = np.minimum(2**15, np.maximum(-2**15+1, high * 2**15)).astype("int16")
+
+#    music = np.minimum(2**15, np.maximum(-2**15+1, music * 2**15)).astype("int16")
+
+music = np.vstack([music,np.zeros_like(music)]).T
+lowmetronomesound = np.vstack([lowmetronomesound,np.zeros_like(lowmetronomesound)]).T
+highmetronomesound = np.vstack([highmetronomesound,np.zeros_like(highmetronomesound)]).T
+
+
+
+
+for t,is_high_beep in zip(beep_times,high_beeps):
+    #print(t)
+    #print(is_low_beep)
+    #print(np.round(t * sample_rate).astype("int_"))
+    #break 
+        if is_high_beep:
+            music[np.round(t * sample_rate).astype("int_") : np.round(t*sample_rate + beep_length*sample_rate).astype("int_")] += np.vstack([np.zeros_like(highmetronomesound),highmetronomesound]).T
+        else:
+            music[np.round(t * sample_rate).astype("int_") : np.round(t*sample_rate + beep_length*sample_rate).astype("int_")] += np.vstack([np.zeros_like(lowmetronomesound),lowmetronomesound]).T
+wav.write(outputfilename,sample_rate,music)
+#    wav.write(outputfilenames[x],sample_rate,music)
